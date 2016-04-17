@@ -96,7 +96,7 @@ public class Jsr305AnnationsTestUtil {
 
     }
 
-    public static void check( final ExpectedWarning... warnings ) {
+    public static void check( final ExpectedWarning... warnings ) throws CheckstyleException {
         final Checker checker = createChecker();
 
         checker.addListener( new DefaultLogger( System.out, false ) );

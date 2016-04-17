@@ -6,7 +6,7 @@
     </tstamp>
 
     <!-- property name="version" value="0.4.2.SNAPSHOT_${TIMESTAMP}" / -->
-    <property name="version" value="0.4.5-bss" />
+    <property name="version" value="0.4.7-vl-SNAPSHOT" />
     <property name="src" value="src" />
     <property name="build" value="build" />
     <property name="classes" value="${build}/classes" />

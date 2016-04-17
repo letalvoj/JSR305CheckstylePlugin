@@ -43,6 +43,7 @@ public class Jsr305Annotations extends Check {
         NONNULL("NotNull", "org.jetbrains.annotations"),
         NULLABLE_JB("Nullable", "org.jetbrains.annotations"),
         NONNULL_JB("NotNull", "javax.annotation"),
+        NONNULL_LOMBOK("NonNull", "lombok"),
         CHECK_RETURN_VALUE("CheckReturnValue", "javax.annotation"),
         PARAMETERS_ARE_NONNULL_BY_DEFAULT("ParametersAreNonnullByDefault", "javax.annotation"),
         PARAMETERS_ARE_NULLABLE_BY_DEFAULT("ParametersAreNullableByDefault", "javax.annotation"),
@@ -190,7 +191,7 @@ public class Jsr305Annotations extends Check {
                     NullnessAnnotation.CHECK_RETURN_VALUE,
                     NullnessAnnotation.NONNULL,
                     NullnessAnnotation.NULLABLE,
-                    NullnessAnnotation.NONNULL_JB,
+                    NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                     NullnessAnnotation.NULLABLE_JB
             );
             checkContainsAll(
@@ -233,7 +234,7 @@ public class Jsr305Annotations extends Check {
                     NullnessAnnotation.NULLABLE
             );
             checkContainsAll("@NotNull and @Nullable are not allowed together!",
-                    NullnessAnnotation.NONNULL_JB,
+                    NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                     NullnessAnnotation.NULLABLE_JB
             );
 
@@ -246,28 +247,32 @@ public class Jsr305Annotations extends Check {
             final boolean parametersAreNullableByDefault = firstAncestorAnnotation == NullnessAnnotation.PARAMETERS_ARE_NULLABLE_BY_DEFAULT;
             final boolean isMethodOverridden = isMethodOverridden();
 
+            if (isMethodLambda()) {
+                return;
+            }
+
             if (isPrimitiveType()) {
                 checkContainsAny("Primitives must not have any nullness annotations!",
                         NullnessAnnotation.CHECK_FOR_NULL,
                         NullnessAnnotation.NONNULL,
                         NullnessAnnotation.NULLABLE,
-                        NullnessAnnotation.NONNULL_JB,
+                        NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                         NullnessAnnotation.NULLABLE_JB
                 );
 
                 return;
             }
-            if (isMethodOverridden && !_allowOverridingParameter) {
-                checkContainsAny("It is not allowed to increase nullness constraint for overriden method parameter definitions!",
-                        NullnessAnnotation.NONNULL,
-                        NullnessAnnotation.NONNULL_JB
-                );
-            }
+//            if (isMethodOverridden && !_allowOverridingParameter) {
+//                checkContainsAny("It is not allowed to increase nullness constraint for overriden method parameter definitions!",
+//                        NullnessAnnotation.NONNULL,
+//                        NullnessAnnotation.NONNULL_JB,NullnessAnnotation.NONNULL_LOMBOK
+//                );
+//            }
             if (parametersAreNonnullByDefault) {
                 checkContainsAny(
                         "It is not necessary to annotate @NotNull if you annotated the method or class with @ParametersAreNonnullByDefault.",
                         NullnessAnnotation.NONNULL,
-                        NullnessAnnotation.NONNULL_JB
+                        NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK
                 );
             }
             if (parametersAreNullableByDefault) {
@@ -281,7 +286,7 @@ public class Jsr305Annotations extends Check {
             if (!isMethodOverridden && !parametersAreNonnullByDefault && !parametersAreNullableByDefault) {
                 checkContainsNone("No nullness Annotation for parameter definition found!",
                         NullnessAnnotation.NONNULL,
-                        NullnessAnnotation.NONNULL_JB,
+                        NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                         NullnessAnnotation.NULLABLE,
                         NullnessAnnotation.NULLABLE_JB
                 );
@@ -320,10 +325,10 @@ public class Jsr305Annotations extends Check {
             checkContainsAny("@ReturnValuesAreNonnullByDefault is not allowed on method return values!",
                     NullnessAnnotation.RETURN_VALUES_ARE_NONNULL_BY_DEFAULT
             );
-            checkContainsAny("@Nullable is not allowed on method return values!",
-                    NullnessAnnotation.NULLABLE,
-                    NullnessAnnotation.NONNULL_JB
-            );
+//            checkContainsAny("@Nullable is not allowed on method return values!",
+//                    NullnessAnnotation.NULLABLE,
+//                    NullnessAnnotation.NULLABLE_JB
+//            );
             checkContainsAll("@Nonnull and @CheckForNull are not allowed together!",
                     NullnessAnnotation.NONNULL,
                     NullnessAnnotation.CHECK_FOR_NULL
@@ -352,7 +357,7 @@ public class Jsr305Annotations extends Check {
                         NullnessAnnotation.CHECK_FOR_NULL,
                         NullnessAnnotation.NONNULL,
                         NullnessAnnotation.NULLABLE,
-                        NullnessAnnotation.NONNULL_JB,
+                        NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                         NullnessAnnotation.NULLABLE_JB
                 );
                 return;
@@ -367,13 +372,15 @@ public class Jsr305Annotations extends Check {
                 checkContainsAny(
                         "It is not necessary to annotate @NotNull if you annoted the class with @ReturnValuesAreNonnullByDefault.",
                         NullnessAnnotation.NONNULL,
-                        NullnessAnnotation.NONNULL_JB
+                        NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK
                 );
             } else {
                 checkContainsNone("Returnvalue must have nullness Annotation (@NotNull or @CheckForNull)!",
                         NullnessAnnotation.CHECK_FOR_NULL,
+                        NullnessAnnotation.NULLABLE,
+                        NullnessAnnotation.NULLABLE_JB,
                         NullnessAnnotation.NONNULL,
-                        NullnessAnnotation.NONNULL_JB,
+                        NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                         NullnessAnnotation.OVERRIDE
                 );
             }
@@ -409,7 +416,7 @@ public class Jsr305Annotations extends Check {
                     NullnessAnnotation.NONNULL,
                     NullnessAnnotation.NULLABLE,
                     NullnessAnnotation.OVERRIDE,
-                    NullnessAnnotation.NONNULL_JB,
+                    NullnessAnnotation.NONNULL_JB, NullnessAnnotation.NONNULL_LOMBOK,
                     NullnessAnnotation.NULLABLE_JB
             );
         }
@@ -606,6 +613,15 @@ public class Jsr305Annotations extends Check {
                 current = current.getParent();
             }
             return null;
+        }
+
+        protected boolean isMethodLambda() {
+            DetailAST current = _ast;
+            while (current != null && current.getType() != TokenTypes.LAMBDA) {
+                current = current.getParent();
+            }
+
+            return current != null && current.getType() == TokenTypes.LAMBDA;
         }
 
         protected boolean isMethodOverridden() {
